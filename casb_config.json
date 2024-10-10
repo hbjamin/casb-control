@@ -1,28 +1,19 @@
 {
-    "channel_masks": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    "high_comparator": 
+    "channel_masks":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    "comparator_thresholds":
     {
-        "threshold": 2,
-        "width": 1 
+        "high":2,
+        "med":2.1,
+        "low":2.2,
+        "tot":2.3,
+        "attn_tot":2.4
     },
-    "med_comparator":
+    "comparator_widths":
     {
-        "threshold": 2.1,
-        "width": 1.1 
-    },
-    "low_comparator":
-    {
-        "threshold": 2.2,
-        "width": 1.2 
-    },
-    "tot_comparator":
-    {
-        "threshold": 2.3,
-        "width": 1.3 
-    },
-    "attn_tot_comparator":
-    {
-        "threshold": 2.4,
-        "width": 1.4 
-    } 
+        "high":1,
+        "med":1.1,
+        "low":1.2,
+        "tot":1.3,
+        "attn_tot":1.4
+    }
 }
