@@ -5,6 +5,7 @@ import math
 import time
 import json
 import subprocess
+import numpy as np
 
 class DataLoader():
     def __init__(self,file):
@@ -29,7 +30,7 @@ class DataLoader():
         print("------------------------")
         print("CHANNEL MASKS:")
         for i in range(len(self.masks)):
-            if int(result[i])==1:
+            if int(self.masks[i])==1:
                 print(f"CH {i+1:>2}: ON")
             else:
                 print(f"CH {i+1:>2}: OFF")
@@ -63,32 +64,36 @@ class CASB():
         self.adcAddr=0x22 #check this
         self.regAddr=0x43C0000C 
         self.threshDacRegMap={
-                 'BLR':0,
-             'AttnBLR':1,
+                 'Med':0,
+             'AttnTot':1,
                 'High':2,
-                 'Med':3,
-                 'Low':4,
-                 'Tot':5,
-             'AttnTot':6
+                 'Tot':3,
+                 'BLR':4,
+                 'Low':5,
+             'AttnBLR':6
         }
         self.widthDacRegMap={
-                'High':0,
+                 'Low':0,
                  'Med':1,
-                 'Low':2,
-                 'Tot':3,
+                 'Tot':2,
+                'High':3,
              'AttnTot':4
         }
+        self.dacVref=3.19
+        self.adcVref=3.187
+        self.BL=0
+        self.BLR=0
+        self.attnBL=0
+        self.attnBLR=0
 
     def voltageToDac10bit(self,voltage):
-        vref=3.3
         bits=10
-        resolution=vref/(math.pow(2,bits))
+        resolution=self.dacVref/(math.pow(2,bits))
         return round(voltage/resolution)
     
     def Dac10bitToVoltage(self,val):
-        vref=3.3
         bits=10
-        resolution=vref/(math.pow(2,bits))
+        resolution=self.dacVref/(math.pow(2,bits))
         return round(val*resolution,2)
 
     def printDacReadWrite(self,dacAddr,channel,ca,voltage,val,msb,lsb):
@@ -145,7 +150,7 @@ class CASB():
         val=int(bstring,2)
         self.write32bToMem(self.regAddr,val)
         result=self.read32bFromMem(self.regAddr) 
-        result=str(bin(int(result,16))[2:])[::-1]
+        result=str(format(int(result,16),'032b')[2:])[::-1]
         for i in range(len(self.masks)):
             if int(result[i])==1:
                 print(f"CH {i+1:>2}: ON")
@@ -166,6 +171,90 @@ class CASB():
             voltage=self.readFromDac(self.widthDacAddr,self.widthDacRegMap[width])
             print(f"{width:>7} set to {voltage:>1} V")
 
+    def adc16bitToVoltage(self,val):  
+        # flip msb and lsb
+        msb=(int(val,16)&0x00ff)<<8
+        lsb=(int(val,16)&0xff00)>>8
+        val=msb+lsb
+        addr=(val&0x7000)>>12
+        data=(val&0x0ffc)>>2
+        bits=10
+        voltage=self.adcVref*data/(math.pow(2,bits))
+        #print(val)
+        #print(format(val,'04x'),'or',format(val,'016b'))
+        #print('addr',bin(addr))
+        #print('data',bin(data),format(data,'010b'))
+        #print('data',data)
+        #print('max',math.pow(2,bits))
+        return voltage
+
+    def readFromAdc(self,channel):
+        ca_byte=0x80+(channel<<4)
+        command=f"sudo i2cget -y 0 0x22 {ca_byte} w"
+        result=subprocess.run(command,shell=True,capture_output=True,text=True).stdout.strip()
+        voltage=self.adc16bitToVoltage(result)
+        #print(f"Reading from channel {channel}")
+        #print(f"Voltage is {voltage}")
+        time.sleep(0.001)
+        return voltage
+
+    def getBaselines(self,p=False):
+        self.BL=self.readFromAdc(0)
+        self.BLR=self.readFromAdc(1)
+        self.attnBL=self.readFromAdc(2)
+        self.attnBLR=self.readFromAdc(3)
+        if p:
+            print("------ GET BASELINES ------")
+            print(f"     BL is {self.BL:.3f} V")
+            print(f"    BLR is {self.BLR:.3f} V")
+            print(f" AttnBL is {self.attnBL:.3f} V")
+            print(f"AttnBLR is {self.attnBLR:.3f} V")
+
+    def setBaselines(self,BLR,attnBLR,p=False):
+        self.writeToDac(self.threshDacAddr,self.threshDacRegMap['BLR'],BLR)
+        voltage=self.readFromDac(self.threshDacAddr,self.threshDacRegMap['BLR'])
+        self.writeToDac(self.threshDacAddr,self.threshDacRegMap['AttnBLR'],attnBLR)
+        voltage=self.readFromDac(self.threshDacAddr,self.threshDacRegMap['AttnBLR'])
+        if p:
+            print("------ SET BASELINES ------")
+            print(f"UnityBL set to {voltage:>1} V")
+            print(f" AttnBL set to {voltage:>1} V")
+    
+    def setMiddleBaselines(self):
+        print("------ QUICK SCAN BASELINES ------")
+        # Min baselines can set
+        self.setBaselines(0,0)
+        self.getBaselines()
+        minBLR=self.BLR
+        minAttnBLR=self.attnBLR
+        # Max baselines can set
+        self.setBaselines(self.adcVref,self.adcVref)
+        self.getBaselines()
+        maxBLR=self.BLR
+        maxAttnBLR=self.attnBLR
+        bestBLR=(minBLR+maxBLR)/2
+        bestAttnBLR=(minAttnBLR+maxAttnBLR)/2
+        print(f"Can set unity baseline between {minBLR:.3f} and {maxBLR:.3f} V")
+        print(f"Can set atten baseline between {minAttnBLR:.3f} and {maxAttnBLR:.3f} V")
+        self.setBaselines(bestBLR,bestAttnBLR,p=True)
+        self.getBaselines(p=True)
+
+    def scanBaselines(self):
+        print("------ SCAN BASELINES ------")
+        dac=np.arange(0,self.adcVref,0.05)
+        adc=[]
+        adc_attn=[]
+        for v in dac:
+            self.setBaselines(v,v)
+            self.getBaselines()
+            adc.append(self.BLR)
+            adc_attn.append(self.attnBLR)
+        print(dac)
+        print(adc)
+        print(adc_attn)
+
+
+
 def main():
 
     if len(sys.argv)!=2:
@@ -182,10 +271,13 @@ def main():
 
     casb=CASB(masks,thresholds,widths) 
     casb.setMasks()
+    casb.setMiddleBaselines()
+    casb.scanBaselines()
+    casb.setBaselines(casb.adcVref,casb.adcVref,p=True)
+    #casb.getBaselines(p=True)
     casb.setThresholds()
     casb.setWidths()
-
-    #Then make loop that restores baseline
+    
 
 if __name__ == "__main__":
     main()
