@@ -41,7 +41,7 @@ def receive_log_from_server():
                         if not chunk:
                             break
                         line = chunk.decode()
-                        print(f"Received: {line}", end='')  # Real-time print to DAQ terminal
+                        print(line, end='')  # Real-time print to DAQ terminal
                         f.write(line)
                         f.flush()
 
