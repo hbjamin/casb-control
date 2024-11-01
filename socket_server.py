@@ -4,7 +4,7 @@ import subprocess
 import datetime
 import hashlib
 
-LOG_PORT = 54322  # New port for log transmission
+LOG_PORT = 54323  # New port for log transmission
 
 def log_message(message):
     # Print to the terminal and log for debugging
@@ -35,7 +35,7 @@ def run_and_stream_setup(client_daq_ip, config_file):
     process = subprocess.Popen(
         command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
     )
-    process.stdin.write("petalinux")
+    process.stdin.write("petalinux\n")
     process.stdin.flush()
 
     log_message("Starting log stream...")
@@ -45,17 +45,17 @@ def run_and_stream_setup(client_daq_ip, config_file):
     with open(log_filename, "w") as log_file:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as log_socket:
-                log_socket.connect((client_daq_ip, 54322))
+                log_socket.connect((client_daq_ip, LOG_PORT))
                 log_message("Connected to DAQ for log transmission.")
 
                 # Real-time line-by-line streaming
                 for line in iter(process.stdout.readline, ''):
                     log_message(line.strip())  # Print to ZTurn terminal
-                    log_file.write(line)
-                    log_file.flush()
+                    log_file.write(line) # Print to DAQ log file
+                    log_file.flush() # Ensure immediate file write
                     safe_send(log_socket, line.encode())
         except Exception as e:
-            log_message(f"Failed to connect to DAQ on port 54322: {e}")
+            log_message(f"Failed to connect to DAQ on port {LOG_PORT}: {e}")
 
 def start_server():
     log_message("START")

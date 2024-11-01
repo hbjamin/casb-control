@@ -25,13 +25,13 @@ def receive_log_from_server():
     os.makedirs(log_directory, exist_ok=True)
     log_file = os.path.join(log_directory, f"log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
 
-    # Open a server socket to listen on port 54322 for the incoming log stream
+    # Open a server socket to listen on port 54323 for the incoming log stream
     with open(log_file, "w") as f:
         print(f"Receiving log output... saving to {log_file}")
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                s.bind(('0.0.0.0', 54322))
+                s.bind(('0.0.0.0', 54323))
                 s.listen(1)
                 log_conn, _ = s.accept()  # Accept the connection from ZTurn
 
