@@ -7,6 +7,10 @@ import subprocess
 import numpy as np
 from json_parser import DataLoader
 
+# GLOBAL VARIABLES??
+### Baseline tolerance?
+### Vref?
+
 class CASB():
     def __init__(self,masks,thresholds,widths):   
 
@@ -147,27 +151,29 @@ class CASB():
         result=output.strip() 
         return result
 
-    def setMasks(self):
+    def setMasks(self,p=False):
         masks=self.masks.reverse()
         bstring=''.join(str(mask) for mask in self.masks)
         val=int(bstring,2)
         self.writeToMem(self.regAddr,val,32)
         result=self.readFromMem(self.regAddr,32) 
         result=str(format(int(result,16),'032b')[2:])[::-1]
-        print("-------------------------------")
-        print("------ SET CHANNEL MASKS ------")
-        print("-------------------------------")
-        for i in range(len(self.masks)):
-            if int(result[i])==1:
-                print(f"CH {i+1:>2}: ON")
-            else:
-                print(f"CH {i+1:>2}: OFF")
+        if p:
+            print("-------------------------------")
+            print("------ SET CHANNEL MASKS ------")
+            print("-------------------------------")
+            for i in range(len(self.masks)):
+                if int(result[i])==1:
+                    print(f"CH {i+1:>2}: ON")
+                else:
+                    print(f"CH {i+1:>2}: OFF")
 
-    def setThresholds(self):
-        print("---------------------------------------")
-        print("------ SET COMPARATOR THRESHOLDS ------")
-        print("---------------------------------------")
-        print(f"[threshold] + [measured baseline] = [shifted threshold] (measured threshold)")
+    def setThresholds(self,p=False):
+        if p:
+            print("---------------------------------------")
+            print("------ SET COMPARATOR THRESHOLDS ------")
+            print("---------------------------------------")
+            print(f"[threshold] + [measured baseline] = [shifted threshold] (measured threshold)")
         i=0
         for thresh in self.thresholds: # high, medium, low etc...
             baseline=0 
@@ -184,17 +190,20 @@ class CASB():
             shifted_thresh=self.thresholds[thresh]+baseline
             self.writeToDac(self.threshDacAddr,self.threshDacRegDict[thresh],shifted_thresh)
             voltage=self.readFromDac(self.threshDacAddr,self.threshDacRegDict[thresh])
-            print(f"Setting {thresh:>7} to {self.thresholds[thresh]:.4f} + {baseline:.4f} = {shifted_thresh:.4f} ({voltage:>{1}.4f}) Volts")
+            if p:
+                print(f"Setting {thresh:>7} to {self.thresholds[thresh]:.4f} + {baseline:.4f} = {shifted_thresh:.4f} ({voltage:>{1}.4f}) Volts")
 
-    def setWidths(self):
-        print("-----------------------------------")
-        print("------ SET COMPARATOR WIDTHS ------")
-        print("-----------------------------------")
-        print(f"[width] (measured width)")
+    def setWidths(self,p=False):
+        if p:
+            print("-----------------------------------")
+            print("------ SET COMPARATOR WIDTHS ------")
+            print("-----------------------------------")
+            print(f"[width] (measured width)")
         for width in self.widths: # high, medium, low etc...
             self.writeToDac(self.widthDacAddr,self.widthDacRegDict[width],self.widths[width])
             voltage=self.readFromDac(self.widthDacAddr,self.widthDacRegDict[width])
-            print(f"Setting {width:>7} to {self.widths[width]:.4f} ({voltage:>{1}.4f}) Volts")
+            if p:
+                print(f"Setting {width:>7} to {self.widths[width]:.4f} ({voltage:>{1}.4f}) Volts")
 
     def adcToVoltage(self,val,p=False):  
         # flip msb and lsb (they are sent back flipped?)
@@ -205,7 +214,7 @@ class CASB():
         data=(val&0xfff) 
         bits=12
         voltage=self.adcVref*data/(math.pow(2,bits))
-        if p==True:
+        if p:
             print(val)
             print(format(val,'04x'),'or',format(val,'016b'))
             print('addr',bin(addr))
@@ -224,12 +233,16 @@ class CASB():
         result=output.strip() 
         voltage=self.adcToVoltage(result)
         time.sleep(0.001)
-        if p==True:
+        if p:
             print(f"Reading from channel {channel}")
             print(f"Voltage is {voltage}")
         return voltage
 
     def measureBaselines(self,p=False):
+        if p:
+            print("---------------------------")
+            print("------ GET BASELINES ------")
+            print("---------------------------")
         self.currentBaselines['UnityBL']=self.readFromAdc(self.baselineAdcRegDict['UnityBL'])
         self.currentBaselines['UnityBLR']=self.readFromAdc(self.baselineAdcRegDict['UnityBLR'])
         self.currentBaselines['AttnBL']=self.readFromAdc(self.baselineAdcRegDict['AttnBL'])
@@ -237,10 +250,7 @@ class CASB():
         self.currentBaselines['HighUnityBLR']=self.readFromAdc(self.baselineAdcRegDict['HighUnityBLR'])
         self.currentBaselines['MedUnityBLR']=self.readFromAdc(self.baselineAdcRegDict['MedUnityBLR'])
         self.currentBaselines['LowUnityBLR']=self.readFromAdc(self.baselineAdcRegDict['LowUnityBLR'])
-        if p==True:
-            print("---------------------------")
-            print("------ GET BASELINES ------")
-            print("---------------------------")
+        if p:
             print(f" Restored unity baseline is {self.currentBaselines['UnityBLR']:.4f} Volts")
             print(f"High comparator baseline is {self.currentBaselines['HighUnityBLR']:.4f} Volts")
             print(f" Med comparator baseline is {self.currentBaselines['MedUnityBLR']:.4f} Volts")
@@ -259,6 +269,10 @@ class CASB():
 
     # Uses result from self.scanBaselines()  
     def setOptimalBaselines(self,p=False):
+        if p:
+            print("-----------------------------")
+            print("------- SET BASELINES ------")
+            print("-----------------------------")
         unity=self.optimalBaselines['UnityBLR']
         attn=self.optimalBaselines['AttnBLR']
         # Make sure the optimal baselines are within the possible ranges
@@ -279,19 +293,19 @@ class CASB():
                 attn=dac[i-1]
                 break
         self.setBaselines(unity,attn)
-        if p==True:
-            print("----------------------------")
-            print("------- SET BASELINES ------")
-            print("----------------------------")
-            print(f"Unity baseline can be set between {self.scannedBaselines['UnityBLR'][0]:.4f} and {self.scannedBaselines['UnityBLR'][-1]:.4f} Volts")
+        self.measureBaselines()
+        self.optimalBaselines['UnityBLR']=self.currentBaselines['UnityBLR'] # correct optimal baseline due to ADC resolution
+        self.optimalBaselines['AttnBLR']=self.currentBaselines['AttnBLR'] # correct optimal baseline due to ADC resolution
+        if p:
             print(f"Set unity baseline to optimal value of {self.optimalBaselines['UnityBLR']:.4f} Volts")
-            print(f"Attn baseline can be set between {self.scannedBaselines['AttnBLR'][0]:.4f} and {self.scannedBaselines['AttnBLR'][-1]:.4f} Volts")
             print(f"Set unity baseline to optimal value of {self.optimalBaselines['AttnBLR']:.4f} Volts")
 
+
     def quickScanBaselines(self,p=False):
-        print("---------------------------------")
-        print("------ QUICK BASELINE SCAN ------")
-        print("---------------------------------")
+        if p:
+            print("---------------------------------")
+            print("------ QUICK BASELINE SCAN ------")
+            print("---------------------------------")
         # Min baselines 
         self.setBaselines(0,0)
         self.measureBaselines()
@@ -302,11 +316,15 @@ class CASB():
         self.measureBaselines()
         max_unity=self.currentBaselines['UnityBLR']
         max_attn=self.currentBaselines['AttnBLR']
-        if p==True:
+        if p:
             print(f"Unity baseline can be set between {min_unity:.4f} and {max_unity:.4f} Volts")
             print(f" Attn baseline can be set between {min_attn:.4f} and {max_attn:.4f} Volts")
 
     def scanBaselines(self,p=False):
+        if p:
+            print("-----------------------------")
+            print("------- SCAN BASELINES ------")
+            print("-----------------------------")
         # voltage domain to scan baseline over
         dac=np.arange(0,self.adcVref,0.05)
         # clear previous results
@@ -321,36 +339,66 @@ class CASB():
         # find optimal baselines
         for baseline in self.scannedBaselines:
             self.optimalBaselines[baseline]=(self.scannedBaselines[baseline][0]+self.scannedBaselines[baseline][-1])/2
-        if p==True:
-            print("---------------------------")
-            print("------ BASELINE SCAN ------")
-            print("---------------------------")
-            for baseline in self.scannedBaselines:
-                print(f"{baseline:>1} can be set between {self.scannedBaselines[baseline][0]:.4f} and {self.scannedBaselines[baseline][-1]:.4f} Volts")
+        if p:
+            print(f"Unity baseline can be set between {self.scannedBaselines['UnityBLR'][0]:.4f} and {self.scannedBaselines['UnityBLR'][-1]:.4f} Volts")
+            print(f"Attn baseline can be set between {self.scannedBaselines['AttnBLR'][0]:.4f} and {self.scannedBaselines['AttnBLR'][-1]:.4f} Volts")
+
+    def monitorBaselines(self):
+        tolerance=0.005
+        self.measureBaselines(p=False)
+        measured=self.currentBaselines['UnityBLR']
+        optimal=self.optimalBaselines['UnityBLR']
+        diff=measured-optimal
+        print(f"Time: {time.time()} --- Restored Unity Baseline --- Measured: {measured:.4f} --- Optimal: {optimal:.4f} --- Diff: {diff:.4f}")
+        if diff>tolerance:
+            print(f"CAUTION! Unity baseline drifted up by {diff:.4f}!")
+        if diff<-1*tolerance:
+            print(f"CAUTION! Unity baseline drifted down by {diff:.4f}!")
+        # correct baseline....?
+        measured=self.currentBaselines['AttnBLR']
+        optimal=self.optimalBaselines['AttnBLR']
+        diff=measured-optimal
+        print(f"Time: {time.time()} --- Restored Attn Baseline --- Measured: {measured:.4f} --- Optimal: {optimal:.4f} --- Diff: {diff:.4f}")
+        if diff>tolerance:
+            print(f"CAUTION! Attn baseline drifted up by {diff:.4f}!")
+        if diff<-1*tolerance:
+            print(f"CAUTION! Attn baseline drifted down by {diff:.4f}!")
+        
 
 def main():
 
     if len(sys.argv)!=2:
         print("This script expects one argument: the CASB's json config file")
         sys.exit(1) 
-
     file = sys.argv[1]  
 
+    # Load
     loader=DataLoader(file)
     loader.parse()
     if loader.validate()==False:
         return 0
-    #loader.print() # for debugging
     masks,thresholds,widths=loader.getData() 
-    
+   
+    # Setup
     casb=CASB(masks,thresholds,widths) 
-    casb.setMasks()
-    casb.scanBaselines()
+    casb.setMasks(p=True)
+    casb.scanBaselines(p=True)
     casb.setOptimalBaselines(p=True)
     casb.measureBaselines(p=True)
-    casb.setThresholds()
-    casb.setWidths()
-    
+    casb.setThresholds(p=True)
+    casb.setWidths(p=True)
+
+    # Monitor
+    print("----------------------------------")
+    print("------ MONITORING BASELINES ------")
+    print("----------------------------------")
+    try:
+        while True:
+            casb.monitorBaselines()
+            time.sleep(60)
+    except KeyboardInterrupt:
+        print("Monitoring stopped!")
+
 
 if __name__ == "__main__":
     main()
