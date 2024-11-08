@@ -3,6 +3,7 @@ import socket
 import json
 import os
 import datetime
+from threading import Thread
 
 def send_config(ip, port, config_path):
     # Send JSON config file to the server
@@ -25,16 +26,16 @@ def receive_log_from_server():
     os.makedirs(log_directory, exist_ok=True)
     log_file = os.path.join(log_directory, f"log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
 
-    # Open a server socket to listen on port 54323 for the incoming log stream
+    # Open a server socket to listen on port 65432 for the incoming log stream
     with open(log_file, "w") as f:
         print(f"Receiving log output... saving to {log_file}")
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                s.bind(('0.0.0.0', 54323))
+                s.bind(('0.0.0.0', 65432))
                 s.listen(1)
                 log_conn, _ = s.accept()  # Accept the connection from ZTurn
-
+                print("Connected to ZTurn for log transmission")
                 with log_conn:
                     while True:
                         chunk = log_conn.recv(1024)
@@ -50,7 +51,6 @@ def receive_log_from_server():
             print(f"Error receiving log from server: {e}")
             sys.exit(1)
 
-
 def main():
     if len(sys.argv) != 2:
         print("ERROR! Please provide the CASB config file as the sole argument.")
@@ -60,8 +60,16 @@ def main():
     zturn_ip = "128.91.45.15"
     zturn_port = 54321
 
+    # Start listening for the log in a separate thread
+    log_listener_thread = Thread(target=receive_log_from_server)
+    log_listener_thread.start()
+
+    # Send configuration
     send_config(zturn_ip, zturn_port, config_file)
-    receive_log_from_server()
+
+    # Wait for log reception to complete
+    log_listener_thread.join()
 
 if __name__ == "__main__":
     main()
+
