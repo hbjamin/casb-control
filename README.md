@@ -18,7 +18,7 @@
 sudo chmod +x /etc/init.d/socket_server
 ```
 - **Enable the Script to Run on Boot**:
-``bash
+```bash
 sudo update-rc.d socket_server defaults
 ```
 
