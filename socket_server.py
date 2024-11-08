@@ -3,8 +3,10 @@ import json
 import subprocess
 import datetime
 import hashlib
+import time
 
-LOG_PORT = 54323  # New port for log transmission
+server_port = 54321  # Port for receiving config
+LOG_PORT = 65432     # Port for transmitting log 
 
 def log_message(message):
     # Print to the terminal and log for debugging
@@ -17,21 +19,24 @@ def generate_log_filename(config_file):
     timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     return f"/home/petalinux/logs/log_{timestamp}_{config_hash[:8]}.txt"
 
-def safe_send(client_socket, data):
-    retries = 3
-    for _ in range(retries):
+def connect_with_retry(client_daq_ip, port, retries=5, delay=2):
+    """Attempt to connect to the DAQ with retries."""
+    for attempt in range(retries):
         try:
-            client_socket.sendall(data)
-            return True
-        except BrokenPipeError:
-            log_message("Broken pipe; retrying...")
-            continue
-    return False
+            log_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            log_socket.connect((client_daq_ip, port))
+            log_message("Connected to DAQ for log transmission.")
+            return log_socket
+        except socket.error as e:
+            log_message(f"Connection attempt {attempt + 1} failed: {e}")
+            time.sleep(delay)
+    log_message("Failed to connect to DAQ after multiple attempts.")
+    return None
 
 def run_and_stream_setup(client_daq_ip, config_file):
     """Run setup.py and stream the output live to the DAQ."""
     print("Running setup.py")
-    command = ["sudo","-S","python3","-u","/home/petalinux/setup.py", config_file]
+    command = ["sudo", "-S", "python3", "-u", "/home/petalinux/setup.py", config_file]
     process = subprocess.Popen(
         command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
     )
@@ -43,25 +48,26 @@ def run_and_stream_setup(client_daq_ip, config_file):
 
     # Connect to the DAQ's log port and stream output
     with open(log_filename, "w") as log_file:
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as log_socket:
-                log_socket.connect((client_daq_ip, LOG_PORT))
-                log_message("Connected to DAQ for log transmission.")
+        log_socket = connect_with_retry(client_daq_ip, LOG_PORT)
+        if not log_socket:
+            log_message("Unable to send logs; DAQ connection was unsuccessful.")
+            return
 
-                # Real-time line-by-line streaming
-                for line in iter(process.stdout.readline, ''):
-                    log_message(line.strip())  # Print to ZTurn terminal
-                    log_file.write(line) # Print to DAQ log file
-                    log_file.flush() # Ensure immediate file write
-                    safe_send(log_socket, line.encode())
-        except Exception as e:
-            log_message(f"Failed to connect to DAQ on port {LOG_PORT}: {e}")
+        with log_socket:
+            for line in iter(process.stdout.readline, ''):
+                log_message(line.strip())  # Log each line to the terminal
+                log_file.write(line)       # Write to local log file
+                log_file.flush()           # Ensure immediate write
+                try:
+                    log_socket.sendall(line.encode())
+                except BrokenPipeError:
+                    log_message("DAQ connection lost during log transmission.")
+                    break
 
 def start_server():
-    log_message("START")
+    log_message("Starting config server")
     server_address = '0.0.0.0'
-    server_port = 54321
-    log_message(f"Starting config server on {server_address}:{server_port}")
+    log_message(f"Listening on {server_address}:{server_port}")
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -92,3 +98,4 @@ def start_server():
 
 if __name__ == "__main__":
     start_server()
+
