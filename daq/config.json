@@ -2,19 +2,19 @@
     "channel_masks":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     "comparator_thresholds":
     {
-        "High":0.1,
-        "Med":0.1,
+        "High":0.3,
+        "Med":0.2,
         "Low":0.1,
         "Tot":0.1,
         "AttnTot":0.1
     },
     "comparator_widths":
     {
-        "High":1,
-        "Med":1,
-        "Low":1,
-        "Tot":1,
-        "AttnTot":1
+        "High":1.7,
+        "Med":1.7,
+        "Low":1.7,
+        "Tot":1.7,
+        "AttnTot":1.7
     }
 }
 
