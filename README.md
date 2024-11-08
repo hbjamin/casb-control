@@ -1,4 +1,7 @@
 ## Overview
+This repository allows the zturn to be remotely controlled from a DAQ computer
+
+
 1. **Python Script**: Socket server that listens for incoming JSON configuration files.
 2. **Init Script**: Manages the Python socket server as a SysVinit service.
 3. **Log File**: Captures essential output and errors from the Python script.
