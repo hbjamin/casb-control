@@ -57,7 +57,7 @@ def main():
         sys.exit(1)
 
     config_file = sys.argv[1]
-    zturn_ip = "128.91.42.95"
+    zturn_ip = "128.91.45.15"
     zturn_port = 54321
 
     send_config(zturn_ip, zturn_port, config_file)
