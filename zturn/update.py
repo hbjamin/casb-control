@@ -200,8 +200,9 @@ class CASB():
         print("---------------------------------------")
         print("------ SET COMPARATOR THRESHOLDS ------")
         print("---------------------------------------")
-        print(f"Setting <comparator> to [threshold] + (measured baseline) = [shifted threshold] (measured threshold)")
-        print(f"Currently <comparator> is set to (measured threshold) - (measured baseline) = [threshold]")
+        print("ADC & DAC resolution is 0.00078 Volts")
+        print("---------------------------------------")
+        print(f"[threshold] + [measured baseline] = (measured threshold)")
         print("---------------------------------------")
         i=0
         baseline=0 
@@ -222,13 +223,13 @@ class CASB():
                 shifted_thresh=threshold+baseline
                 self.writeToDac(self.threshDacAddr,self.threshDacRegDict[comparator],shifted_thresh)
                 voltage=self.readFromDac(self.threshDacAddr,self.threshDacRegDict[comparator])
-                print(f"Setting {comparator} to {threshold:.4f} + {baseline:.4f} = {shifted_thresh:.4f} ({voltage:>{1}.4f}) Volts")
+                print(f"Setting   {comparator}        to {threshold:.4f} + {baseline:.4f} = {voltage:>{1}.4f} Volts")
             else:
                 voltage=self.readFromDac(self.threshDacAddr,self.threshDacRegDict[comparator])
                 thresh=voltage-baseline
                 #print(f"Currently {comparator} is set to {threshold:.4f} + {baseline:.4f} = {shifted_thresh:.4f} ({voltage:>{1}.4f}) Volts")
                 #print(f"(measured threshold) - (measured baseline) = [threshold] ")
-                print(f"Currently {comparator} is set to ({voltage:>{1}.4f}) - {baseline:.4f} = {thresh:.4f}")
+                print(f"Currently {comparator} is set to {thresh:.4f} + {baseline:.4f} = {voltage:>{1}.4f} Volts")
         
 
     def setWidths(self,p=False):

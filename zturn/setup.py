@@ -173,7 +173,7 @@ class CASB():
             print("---------------------------------------")
             print("------ SET COMPARATOR THRESHOLDS ------")
             print("---------------------------------------")
-            print(f"[threshold] + [measured baseline] = [shifted threshold] (measured threshold)")
+            print(f"[threshold] + [measured baseline] = [measured threshold]")
         i=0
         for thresh in self.thresholds: # high, medium, low etc...
             baseline=0 
@@ -191,7 +191,7 @@ class CASB():
             self.writeToDac(self.threshDacAddr,self.threshDacRegDict[thresh],shifted_thresh)
             voltage=self.readFromDac(self.threshDacAddr,self.threshDacRegDict[thresh])
             if p:
-                print(f"Setting {thresh:>7} to {self.thresholds[thresh]:.4f} + {baseline:.4f} = {shifted_thresh:.4f} ({voltage:>{1}.4f}) Volts")
+                print(f"Setting {thresh:>7} to {self.thresholds[thresh]:.4f} + {baseline:.4f} = {voltage:>{1}.4f} Volts")
 
     def setWidths(self,p=False):
         if p:
@@ -341,7 +341,7 @@ class CASB():
             self.optimalBaselines[baseline]=(self.scannedBaselines[baseline][0]+self.scannedBaselines[baseline][-1])/2
         if p:
             print(f"Unity baseline can be set between {self.scannedBaselines['UnityBLR'][0]:.4f} and {self.scannedBaselines['UnityBLR'][-1]:.4f} Volts")
-            print(f"Attn baseline can be set between {self.scannedBaselines['AttnBLR'][0]:.4f} and {self.scannedBaselines['AttnBLR'][-1]:.4f} Volts")
+            print(f" Attn baseline can be set between {self.scannedBaselines['AttnBLR'][0]:.4f} and {self.scannedBaselines['AttnBLR'][-1]:.4f} Volts")
 
     def monitorBaselines(self):
         tolerance=0.005
