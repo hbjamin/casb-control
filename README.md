@@ -1,5 +1,6 @@
 ## Overview
 This repository allows the zturn to be remotely controlled from a DAQ computer
+- Z-Turn IP @ Berkeley: `192.168.1.189`
 
 
 1. **Python Script**: Socket server that listens for incoming JSON configuration files.
