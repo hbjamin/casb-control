@@ -5,19 +5,24 @@ import os
 import datetime
 from threading import Thread
 
-def send_config(ip, port, config_path):
-    # Send JSON config file to the server
+
+def send_args(host, port, args):
+    """
+    Sends command-line arguments to the socket server.
+    """
     try:
-        with open(config_path, 'r') as f:
-            config = json.load(f)
-        data = json.dumps(config).encode('utf-8')
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((ip, port))
-            print(f"Connected to {ip}:{port} for config transmission")
-            sock.sendall(data)
-            print("Config file sent to CASB.")
-    except (socket.error, json.JSONDecodeError, FileNotFoundError) as e:
-        print(f"Error during config transmission: {e}")
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((host, port))
+            # Join the arguments into a single string
+            args_str = ' '.join(args)
+            print(f"Sending arguments: {args_str}")
+            s.sendall(args_str.encode('utf-8'))  # Send the arguments string
+            
+            # Wait for a response
+            response = s.recv(1024).decode('utf-8')  # Adjust buffer size as needed
+            print(f"Server response: {response}")
+    except ConnectionError as e:
+        print(f"Failed to connect to server: {e}")
         sys.exit(1)
 
 def receive_log_from_server():
@@ -32,7 +37,7 @@ def receive_log_from_server():
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                s.bind(('0.0.0.0', 65432))
+                s.bind(('0.0.0.0', 65433))
                 s.listen(1)
                 log_conn, _ = s.accept()  # Accept the connection from ZTurn
                 print("Connected to ZTurn for log transmission")
@@ -52,21 +57,21 @@ def receive_log_from_server():
             sys.exit(1)
 
 def main():
-    if len(sys.argv) != 2:
-        print("ERROR! Please provide the CASB config file as the sole argument.")
+    if len(sys.argv) < 3:
+        print("ERROR! Please provide valid arguments.")
         sys.exit(1)
 
-    config_file = sys.argv[1]
+    args = sys.argv[1:]
     zturn_ip = "192.168.1.189" # first CASB at Berkeley
     #zturn_ip = "128.91.45.15"
-    zturn_port = 54321
+    zturn_port = 54322
 
     # Start listening for the log in a separate thread
     log_listener_thread = Thread(target=receive_log_from_server)
     log_listener_thread.start()
 
     # Send configuration
-    send_config(zturn_ip, zturn_port, config_file)
+    send_args(zturn_ip, zturn_port, args)
 
     # Wait for log reception to complete
     log_listener_thread.join()
