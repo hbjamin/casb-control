@@ -17,6 +17,7 @@ cd daq/
 
 Edit `config.json` 
 | Key | Value | Description |
+|--------------------|---------------------------|-------------------------------------------------------------------------------------------------------|
 | `channel_masks`         | list of ints   | Sets the mask of each channel. Leftmost entry is channel 1. Must be `0` (OFF) or `1` (ON) |
 | `comparator_thresholds` | list of floats | Sets the **relative (above baseline)** threshold of each comparator. Must be between 0-3 Volts. Resolution is 0.0008 V | 
 | `comparator_widths`     | list of floats | Sets the width of each comparator's trigger. Set to 1.7 for widest possible trigger. Must be between 0-3 Volts. Resolution is 0.0008 V | 
