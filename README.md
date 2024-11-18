@@ -3,10 +3,10 @@
 - `zturn/` Code on the CASB's Z-Turn **(DO NOT EDIT EXCEPT FOR PRINT STATEMENTS)**
 
 # Notes
-- First CASB @ Berkeley
-  - Only use the unity (actually `0.65`) gain path. This includes to the `high`, `medium`, `low`, and `time over threshold` comparators
-  - Analog input 2 is noisy. **LEAVE OFF AT ALL TIMES**
-  - IP `192.168.1.189`
+- Only use the unity (actually `0.65`) gain path. This includes the `high`, `medium`, `low`, and `time over threshold` compators.
+- Analog input 2 is noisy. **LEAVE OFF AT ALL TIMES**
+
+# Map of outputs
 
 # How to connect and configure the CASB 
 Clone this repository
