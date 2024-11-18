@@ -1,0 +1,59 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          socket_server
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Description:       Start socket server for ZTurn
+### END INIT INFO
+
+
+SCRIPT="/usr/bin/python3 /home/petalinux/socket_update.py"
+RUNAS=petalinux
+PIDFILE="/var/run/socket_update.pid"
+
+start() {
+    if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE") 2>/dev/null; then
+        echo "Service already running" >&2
+        return 1
+    fi
+    echo "Starting service" >&2
+
+    # Store the password in a variable
+    password="petalinux\n"
+
+    # Run the script with line-buffering as the petalinux user, passing the password
+    echo "$password" | sudo -S -u petalinux stdbuf -oL /usr/bin/python3 /home/petalinux/socket_update.py > /home/petalinux/socket_update.log 2>&1 &
+    echo $! > "$PIDFILE"  # Save the process ID to the PID file
+    sleep 1  # Give it time to start
+    echo "Service started" >&2
+}
+
+stop() {
+    if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE") 2>/dev/null; then
+        echo "Service not running" >&2
+        return 1
+    fi
+    echo "Stopping service" >&2
+    kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
+    echo "Service stopped" >&2
+}
+
+status() {
+    if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE") 2>/dev/null; then
+        echo "Service is running" >&2
+        return 0
+    fi
+    echo "Service is not running" >&2
+    return 1
+}
+
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) stop; start ;;
+    status) status ;;
+    *) echo "Usage: $0 {start|stop|status|restart}" >&2; exit 1 ;;
+esac
+
