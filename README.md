@@ -1,9 +1,9 @@
-### CASB Control Code
+# Central Analog Summing Board (CASB)
 
 - `daq/` Use the contents of this folder to configure the CASB remotely 
-- `zturn/` (**DO NOT EDIT**) Code that lives on the CASB's Z-Turn 
+- `zturn/` (**DO NOT EDIT**) Code on the CASB's Z-Turn 
 
-### How to connect and configure the CASB 
+# How to connect and configure the CASB 
 
 Clone this repository
 ```bash
@@ -19,9 +19,18 @@ Edit `config.json`
 | Key | Value | Description |
 |--------------------|---------------------------|-------------------------------------------------------------------------------------------------------|
 | `channel_masks`         | list of ints   | Sets the mask of each channel. Leftmost entry is channel 1. Must be `0` (OFF) or `1` (ON) |
-| `comparator_thresholds` | list of floats | Sets the **relative (above baseline)** threshold of each comparator. Must be between 0-3 Volts. Resolution is 0.0008 V | 
-| `comparator_widths`     | list of floats | Sets the width of each comparator's trigger. Set to 1.7 for widest possible trigger. Must be between 0-3 Volts. Resolution is 0.0008 V | 
+| `comparator_thresholds` | list of floats | Sets the **relative (above baseline)** threshold of each comparator. Must be between 0-3.19 Volts. Resolution is 0.00078 V | 
+| `comparator_widths`     | list of floats | Sets the width of each comparator's trigger. Set to 1.7 for widest possible trigger. Must be between 0-3.19 Volts. Resolution is 0.00078 V | 
 
+Perform initial configuration of the CASB. A baseline scan will be automatically performed (this will take a minute), and the optimal basleine will be chosen before setting comparator thresholds. Baseline monitoring measurement will be output every minute until the script is killed 
+```bash
+python3 send_config.py config.json
+```
+
+Update a CASB setting without performing a baseline scan or killing the `setup.py` baseline monitoring
+```bash
+python3 send_update.py [arg1] [arg2] [arg3] [arg4]
+```
 
 ### Available arguments
 
@@ -33,7 +42,7 @@ Edit `config.json`
 | `--threshold`      | `-t`       | float  | `None`        | Specifies the threshold voltage for the comparator. Must be between `0` and `casb.dacVref`.          |
 | `--width`          | `-w`       | float  | `None`        | Specifies the width for the comparator. Must be between `0` and `casb.dacVref`.                      |
 
-### Documentation  
+### Documentation for `zturn/` code  
 
 1. **Python Script**: Socket server that listens for incoming JSON configuration files.
 2. **Init Script**: Manages the Python socket server as a SysVinit service.
