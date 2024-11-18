@@ -37,6 +37,14 @@ class CASB():
             'UnityBLR':4, # for restoring unity path baseline  
              'AttnBLR':6  # for restoring attenuated path baseline
         }
+        # minimum pulse height for comparator to trigger PTB every time
+        self.minThresh={
+               'High':0.02, 
+                'Med':0.017,
+                'Low':0.017,
+                'Tot':0.0000,
+            'AttnTot':0.0000
+        }
         self.widthDacRegDict={ # comparator name --> register of width DAC
                 'High':3,
                  'Med':1,
@@ -72,11 +80,12 @@ class CASB():
         'MedUnityBLR':0, # result of post-restoration shift 
         'LowUnityBLR':0  # result of post-restoration shift 
         }
-
         # ----- COULD USE LAST ADC REGISTER HERE ----- short them together so only have to measure one? and have same resolution??
         # reference voltages for DAC and ADC 
-        self.dacVref=3.19 # measured with DVM ----- redo? -----
-        self.adcVref=3.187 # measured with DVM ----- stable? -----
+        self.dacVref=3.19 # measured with DVM 
+        self.adcVref=3.187 # measured with DVM
+        
+
 
     def voltageToDac(self,voltage):
         bits=12
@@ -173,7 +182,7 @@ class CASB():
             print("---------------------------------------")
             print("------ SET COMPARATOR THRESHOLDS ------")
             print("---------------------------------------")
-            print(f"[threshold] + [measured baseline] = [measured threshold]")
+            print(f"[threshold] + [measured baseline] - [min threshold 100% PTB trigger] = [measured threshold]")
         i=0
         for thresh in self.thresholds: # high, medium, low etc...
             baseline=0 
@@ -187,11 +196,11 @@ class CASB():
                 baseline=self.currentBaselines['UnityBLR'] # technically wrong
             elif thresh=='AttnTot':
                 baseline=self.currentBaselines['AttnBLR'] # probably wrong?
-            shifted_thresh=self.thresholds[thresh]+baseline
+            shifted_thresh=self.thresholds[thresh]+baseline-self.minThresh[thresh]
             self.writeToDac(self.threshDacAddr,self.threshDacRegDict[thresh],shifted_thresh)
             voltage=self.readFromDac(self.threshDacAddr,self.threshDacRegDict[thresh])
             if p:
-                print(f"Setting {thresh:>7} to {self.thresholds[thresh]:.4f} + {baseline:.4f} = {voltage:>{1}.4f} Volts")
+                print(f"Setting {thresh:>7} to {self.thresholds[thresh]:.4f} + {baseline:.4f} - {self.minThresh[thresh]:.4f} = {voltage:>{1}.4f} Volts")
 
     def setWidths(self,p=False):
         if p:
@@ -355,14 +364,14 @@ class CASB():
         if diff<-1*tolerance:
             print(f"CAUTION! Unity baseline drifted down by {diff:.4f}!")
         # correct baseline....?
-        measured=self.currentBaselines['AttnBLR']
-        optimal=self.optimalBaselines['AttnBLR']
-        diff=measured-optimal
-        print(f"Time: {time.time()} --- Restored Attn Baseline --- Measured: {measured:.4f} --- Optimal: {optimal:.4f} --- Diff: {diff:.4f}")
-        if diff>tolerance:
-            print(f"CAUTION! Attn baseline drifted up by {diff:.4f}!")
-        if diff<-1*tolerance:
-            print(f"CAUTION! Attn baseline drifted down by {diff:.4f}!")
+        #measured=self.currentBaselines['AttnBLR']
+        #optimal=self.optimalBaselines['AttnBLR']
+        #diff=measured-optimal
+        #print(f"Time: {time.time()} --- Restored Attn Baseline --- Measured: {measured:.4f} --- Optimal: {optimal:.4f} --- Diff: {diff:.4f}")
+        #if diff>tolerance:
+        #    print(f"CAUTION! Attn baseline drifted up by {diff:.4f}!")
+        #if diff<-1*tolerance:
+        #    print(f"CAUTION! Attn baseline drifted down by {diff:.4f}!")
         
 
 def main():

@@ -33,12 +33,19 @@ class CASB():
             'UnityBLR':4, # for restoring unity path baseline  
              'AttnBLR':6  # for restoring attenuated path baseline
         }
+        self.minThresh={
+                   'h':0.02,
+                   'm':0.017,  
+                   'l':0.017,  
+                   't':0.0000, 
+                   'a':0.0000
+        }
         self.widthDacRegDict={ # comparator name --> register of width DAC
-                'High':3,
-                 'Med':1,
-                 'Low':0,
-                 'Tot':2, # ----- unused?? -----
-             'AttnTot':4 # ----- unused?? -----
+                 'h':3,
+                 'm':1,
+                 'l':0,
+                 't':2, # ----- unused?? -----
+                 'a':4 # ----- unused?? -----
         }
         self.baselineAdcRegDict={ # baseline name --> register of ADC
             'UnityBL':0,
@@ -194,6 +201,7 @@ class CASB():
             if p:
                 print(f"Setting {thresh:>7} to {self.thresholds[thresh]:.4f} + {baseline:.4f} = {shifted_thresh:.4f} ({voltage:>{1}.4f}) Volts")
 
+        
     def updateComparatorThreshold(self,comp,threshold):
         print("---------------------------------------")
         print(f"Updating {comp} comparator threshold to {threshold}")
@@ -202,7 +210,7 @@ class CASB():
         print("---------------------------------------")
         print("ADC & DAC resolution is 0.00078 Volts")
         print("---------------------------------------")
-        print(f"[threshold] + [measured baseline] = (measured threshold)")
+        print(f"[threshold] + [measured baseline] - [min threshold 100% PTB trigger]  = (measured threshold)")
         print("---------------------------------------")
         i=0
         baseline=0 
@@ -220,18 +228,36 @@ class CASB():
             elif comparator=='a':
                 baseline=self.currentBaselines['AttnBLR'] # probably wrong?
             if comparator==comp:
-                shifted_thresh=threshold+baseline
+                shifted_thresh=threshold+baseline-self.minThresh[comparator]
                 self.writeToDac(self.threshDacAddr,self.threshDacRegDict[comparator],shifted_thresh)
                 voltage=self.readFromDac(self.threshDacAddr,self.threshDacRegDict[comparator])
-                print(f"Setting   {comparator}        to {threshold:.4f} + {baseline:.4f} = {voltage:>{1}.4f} Volts")
+                print(f"Setting   {comparator} threshold        to {threshold:.4f} + {baseline:.4f} - {self.minThresh[comparator]:.4f} = {voltage:>{1}.4f} Volts")
             else:
                 voltage=self.readFromDac(self.threshDacAddr,self.threshDacRegDict[comparator])
-                thresh=voltage-baseline
-                #print(f"Currently {comparator} is set to {threshold:.4f} + {baseline:.4f} = {shifted_thresh:.4f} ({voltage:>{1}.4f}) Volts")
-                #print(f"(measured threshold) - (measured baseline) = [threshold] ")
-                print(f"Currently {comparator} is set to {thresh:.4f} + {baseline:.4f} = {voltage:>{1}.4f} Volts")
-        
+                thresh=voltage-baseline+self.minThresh[comparator]
+                print(f"Currently {comparator} threshold is set to {thresh:.4f} + {baseline:.4f} - {self.minThresh[comparator]:.4f} = {voltage:>{1}.4f} Volts")
 
+    def updateComparatorWidth(self,comp,width):
+        print("---------------------------------------")
+        print(f"Updating {comp} comparator width to {width}")
+        print("---------------------------------------")
+        print("------ SET COMPARATOR WIDTHS ------")
+        print("---------------------------------------")
+        print("ADC & DAC resolution is 0.00078 Volts")
+        print("---------------------------------------")
+        print(f"[width] = (measured width)")
+        print("---------------------------------------")
+        i=0
+        comparators=['h','m','l','t','a']
+        for comparator in comparators:
+            if comparator==comp:
+                self.writeToDac(self.widthDacAddr,self.widthDacRegDict[comparator],width)
+                voltage=self.readFromDac(self.widthDacAddr,self.widthDacRegDict[comparator])
+                print(f"Setting   {comparator} width        to {width:.4f} = {voltage:>{1}.4f} Volts")
+            else:
+                voltage=self.readFromDac(self.widthDacAddr,self.widthDacRegDict[comparator])
+                print(f"Currently {comparator} width is set to {width:.4f} = {voltage:>{1}.4f} Volts")
+    
     def setWidths(self,p=False):
         if p:
             print("-----------------------------------")
@@ -414,7 +440,7 @@ def main():
     parser.add_argument('--threshold','-t',type=float,default=None,help="update comparator threshold")
     parser.add_argument('--width','-w',type=float,default=None,help="update comparator width")
     args=parser.parse_args()
-
+    
     casb=CASB()
 
     # Update channel mask
@@ -435,11 +461,11 @@ def main():
                     casb.updateComparatorThreshold(args.comparator,args.threshold)
             elif args.width!=None:
                 if args.width>=0 and args.width<casb.dacVref:
-                    print(f"Updating {args.comparator} comparator width to {args.width}")
+                    casb.updateComparatorWidth(args.comparator,args.width)
             else:
-                print(f"Please enter a voltage between 0 and {casb.dacVref} Volts")
+                print(f"Please enter a voltage between 0 and {casb.dacVref} Volts instead of {args.threshold}")
         else:
-            print("Please enter a valid comparator")
+            print(f"Please enter a valid comparator instead of {args.comparator}")
             print("     h == High threshold")
             print("     m == Medium threshold")
             print("     l == Low threshold")

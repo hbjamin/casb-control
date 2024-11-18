@@ -21,7 +21,7 @@ start() {
     echo "Starting service" >&2
 
     # Store the password in a variable
-    password="petalinux"
+    password="petalinux\n"
 
     # Run the script with line-buffering as the petalinux user, passing the password
     echo "$password" | sudo -S -u petalinux stdbuf -oL /usr/bin/python3 /home/petalinux/socket_server.py > /home/petalinux/socket_server.log 2>&1 &
