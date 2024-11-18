@@ -59,6 +59,21 @@ python3 send_config.py config.json
 ```bash
 python3 send_update.py [arg1] [arg2] [arg3] [arg4]
 ```
+### Examples
+Turn channel 2 off
+```bash
+python3 send_update.py -c 2 -m 0
+```
+
+Set high comparator threshold to 800 mV
+```bash
+python3 send_update.py -p h -t 0.8
+```
+
+Set low comparator output as long as possible
+```bash
+python3 send_update.py -p l -w 1.7
+```
 
 ### Available arguments
 
@@ -66,7 +81,7 @@ python3 send_update.py [arg1] [arg2] [arg3] [arg4]
 |--------------------|------------|--------|---------------|-------------------------------------------------------------------------------------------------------|
 | `--channel`        | `-c`       | int    | `None`        | Specifies the channel to update. Must be an integer between `1` and `20`.                            |
 | `--mask`           | `-m`       | int    | `None`        | Specifies the mask value to update. Must be `0` (OFF) or `1` (ON).                                   |
-| `--comparator`     | `-p`       | str    | `None`        | Specifies the comparator to update. Valid options are `h` (high), `m` (medium), `l` (low), `t` (time over threshold), or `a` (attenuated gain path time over threshold).                   |
+| `--comparator`     | `-p`       | str    | `None`        | Specifies the comparator to update. Valid options are `h` (unity gian path high), `m` (unity gain path medium), `l` (unity gain path low), `t` (unity gain path time over threshold), or `a` (attenuated gain path time over threshold).                   |
 | `--threshold`      | `-t`       | float  | `None`        | Specifies the threshold voltage for the comparator. Must be between `0` and `casb.dacVref`.          |
 | `--width`          | `-w`       | float  | `None`        | Specifies the width for the comparator. Must be between `0` and `casb.dacVref`.                      |
 
