@@ -59,6 +59,17 @@ python3 send_config.py config.json
 ```bash
 python3 send_update.py [arg1] [arg2] [arg3] [arg4]
 ```
+
+### Available arguments
+
+| Argument          | Short Form | Type   | Default Value | Description                                                                                           |
+|--------------------|------------|--------|---------------|-------------------------------------------------------------------------------------------------------|
+| `--channel`        | `-c`       | int    | `None`        | Specifies the channel to update. Must be an integer between `1` and `20`.                            |
+| `--mask`           | `-m`       | int    | `None`        | Specifies the mask value to update. Must be `0` (OFF) or `1` (ON).                                   |
+| `--comparator`     | `-p`       | str    | `None`        | Specifies the comparator to update. Valid options are `h` (unity gian path high), `m` (unity gain path medium), `l` (unity gain path low), `t` (unity gain path time over threshold), or `a` (attenuated gain path time over threshold).                   |
+| `--threshold`      | `-t`       | float  | `None`        | Specifies the threshold voltage for the comparator. Must be between `0` and `casb.dacVref`.          |
+| `--width`          | `-w`       | float  | `None`        | Specifies the width for the comparator. Must be between `0` and `casb.dacVref`.                      |
+
 ### Examples
 Turn channel 2 off
 ```bash
@@ -75,17 +86,7 @@ Set low comparator output as long as possible
 python3 send_update.py -p l -w 1.7
 ```
 
-### Available arguments
-
-| Argument          | Short Form | Type   | Default Value | Description                                                                                           |
-|--------------------|------------|--------|---------------|-------------------------------------------------------------------------------------------------------|
-| `--channel`        | `-c`       | int    | `None`        | Specifies the channel to update. Must be an integer between `1` and `20`.                            |
-| `--mask`           | `-m`       | int    | `None`        | Specifies the mask value to update. Must be `0` (OFF) or `1` (ON).                                   |
-| `--comparator`     | `-p`       | str    | `None`        | Specifies the comparator to update. Valid options are `h` (unity gian path high), `m` (unity gain path medium), `l` (unity gain path low), `t` (unity gain path time over threshold), or `a` (attenuated gain path time over threshold).                   |
-| `--threshold`      | `-t`       | float  | `None`        | Specifies the threshold voltage for the comparator. Must be between `0` and `casb.dacVref`.          |
-| `--width`          | `-w`       | float  | `None`        | Specifies the width for the comparator. Must be between `0` and `casb.dacVref`.                      |
-
-### Documentation for `zturn/` code  
+# Documentation for `zturn/` code  
 
 1. **Python Script**: Socket server that listens for incoming JSON configuration files.
 2. **Init Script**: Manages the Python socket server as a SysVinit service.
