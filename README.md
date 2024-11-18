@@ -7,25 +7,6 @@
 - Do not use the attenuated (`0.3`) gian path's `attenuated time over threshold` comparator
 - **Leave analog input 2 off at all times** 
 
-### Map of outputs 
-| SMB Connector (from top) | Description |
-|---------------------------|-------------------------------------------------------------------------------------------------------|
-| `1` | Unity path analog monitor before baseline restoration |
-| `2` | **Unity path analog monitor after baseline restoration**  |
-| `3` | Attenuated path analog monitor before baseline restoration |
-| `4` | Attenuated path analog monitor after baseline restoration |
-| `5` | **Unity path high comparator ECL output** |
-| `6` | **Unity path medium comparator ECL output** |
-| `7` | **Unity path low comparator ECL output** |
-| `8` | **Unity path time over threshold comparator ECL output** |
-| `9` | Attenuated path time over threshold comparator ECL output |
-| `10`|  Spare ECL output 1 |
-| `11`|  Spare ECL output 2 |
-| `12`|  Lockout ECL input |
-| `13`|  Delayed global trigger ECL input |
-| `14`|  Spare ECL input 1 |
-| `15`|  Spare ECL input 2 |
-
 # How to connect and configure the CASB 
 Clone this repository
 ```bash
@@ -86,6 +67,25 @@ Set low comparator output as long as possible
 ```bash
 python3 send_update.py -p l -w 1.7
 ```
+
+### Map of outputs 
+| SMB Connector (from top) | Description |
+|---------------------------|-------------------------------------------------------------------------------------------------------|
+| `1` | Unity path analog monitor before baseline restoration |
+| `2` | **Unity path analog monitor after baseline restoration**  |
+| `3` | Attenuated path analog monitor before baseline restoration |
+| `4` | Attenuated path analog monitor after baseline restoration |
+| `5` | **Unity path high comparator ECL output** |
+| `6` | **Unity path medium comparator ECL output** |
+| `7` | **Unity path low comparator ECL output** |
+| `8` | **Unity path time over threshold comparator ECL output** |
+| `9` | Attenuated path time over threshold comparator ECL output |
+| `10`|  Spare ECL output 1 |
+| `11`|  Spare ECL output 2 |
+| `12`|  Lockout ECL input |
+| `13`|  Delayed global trigger ECL input |
+| `14`|  Spare ECL input 1 |
+| `15`|  Spare ECL input 2 |
 
 # Documentation for `zturn/` code  
 
