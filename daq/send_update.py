@@ -13,34 +13,34 @@ def send_args(host, port, args):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
+            print(f"Connected to ZTurn at {host}:{port}")
             # Join the arguments into a single string
             args_str = ' '.join(args)
-            print(f"Sending arguments: {args_str}")
+            #print(f"Sending arguments: {args_str}")
             s.sendall(args_str.encode('utf-8'))  # Send the arguments string
-            
             # Wait for a response
             response = s.recv(1024).decode('utf-8')  # Adjust buffer size as needed
-            print(f"Server response: {response}")
+            #print(f"Server response: {response}")
     except ConnectionError as e:
         print(f"Failed to connect to server: {e}")
         sys.exit(1)
 
 def receive_log_from_server():
     """Receive log output from the server and save to a log file."""
-    log_directory = "daq_logs"
+    log_directory = "logs"
     os.makedirs(log_directory, exist_ok=True)
-    log_file = os.path.join(log_directory, f"log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
+    log_file = os.path.join(log_directory, f"log_{datetime.datetime.now().strftime('%Y_%b_%d_%Hh_%Mm_%Ss').lower()}.txt")
 
     # Open a server socket to listen on port 65432 for the incoming log stream
     with open(log_file, "w") as f:
-        print(f"Receiving log output... saving to {log_file}")
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 s.bind(('0.0.0.0', 65433))
                 s.listen(1)
                 log_conn, _ = s.accept()  # Accept the connection from ZTurn
-                print("Connected to ZTurn for log transmission")
+                #print("Connected to ZTurn")
+                print(f"Saving ZTurn output to {log_file}")
                 with log_conn:
                     while True:
                         chunk = log_conn.recv(1024)
@@ -51,7 +51,7 @@ def receive_log_from_server():
                         f.write(line)
                         f.flush()
 
-            print(f"Log transmission complete. Log saved to {log_file}")
+            #print(f"Log transmission complete")
         except socket.error as e:
             print(f"Error receiving log from server: {e}")
             sys.exit(1)
