@@ -358,17 +358,24 @@ class CASB():
         measured=self.currentBaselines['UnityBLR']
         optimal=self.optimalBaselines['UnityBLR']
         diff=measured-optimal
-        print(f"Time: {time.time()} --- Restored Unity Baseline --- Measured: {measured:.4f} --- Optimal: {optimal:.4f} --- Diff: {diff:.4f}")
+        h_measured=self.currentBaselines['HighUnityBLR']
+        m_measured=self.currentBaselines['MedUnityBLR']
+        l_measured=self.currentBaselines['LowUnityBLR']
+        print("-----------------------------")
+        print(f"Time: {time.time()} --- Restored Unity Baseline      --- Measured: {measured:.4f} --- Original: {optimal:.4f} --- Diff: {diff:.4f}")
+        print(f"Time: {time.time()} --- Restored Unity Baseline HIGH --- Measured: {h_measured:.4f}")
+        print(f"Time: {time.time()} --- Restored Unity Baseline MED  --- Measured: {m_measured:.4f}")
+        print(f"Time: {time.time()} --- Restored Unity Baseline LOW  --- Measured: {l_measured:.4f}")
         if diff>tolerance:
-            print(f"CAUTION! Unity baseline drifted up by {diff:.4f}!")
+            print(f"CAUTION! Restored unity baseline drifted up by {diff:.4f}!")
         if diff<-1*tolerance:
-            print(f"CAUTION! Unity baseline drifted down by {diff:.4f}!")
+            print(f"CAUTION! Restored unity baseline drifted down by {diff:.4f}!")
         # correct baseline....?
         #measured=self.currentBaselines['AttnBLR']
         #optimal=self.optimalBaselines['AttnBLR']
         #diff=measured-optimal
         #print(f"Time: {time.time()} --- Restored Attn Baseline --- Measured: {measured:.4f} --- Optimal: {optimal:.4f} --- Diff: {diff:.4f}")
-        #if diff>tolerance:
+        #if diff>tolerance
         #    print(f"CAUTION! Attn baseline drifted up by {diff:.4f}!")
         #if diff<-1*tolerance:
         #    print(f"CAUTION! Attn baseline drifted down by {diff:.4f}!")
