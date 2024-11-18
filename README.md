@@ -1,10 +1,11 @@
 # Central Analog Summing Board (CASB)
 - `daq/` Use the contents of this folder to configure the CASB remotely 
-- `zturn/` Code on the CASB's Z-Turn **(DO NOT EDIT EXCEPT FOR PRINT STATEMENTS)**
+- `zturn/` Code on the CASB's Z-Turn 
 
 ### Notes
-- Only use the unity (actually `0.65`) gain path. This includes the `high`, `medium`, `low`, and `time over threshold` compators.
-- Analog input 2 is noisy. **LEAVE OFF AT ALL TIMES**
+- Only use the unity (actually `0.65`) gain path's `high`, `medium`, `low`, and `time over threshold` compators.
+- Do not use the attenuated (`0.3`) gian path's `attenuated time over threshold` comparator
+- **Leave analog input 2 off at all times** 
 
 ### Map of outputs 
 | SMB Connector (from top) | Description |
@@ -88,48 +89,31 @@ python3 send_update.py -p l -w 1.7
 
 # Documentation for `zturn/` code  
 
-1. **Python Script**: Socket server that listens for incoming JSON configuration files.
-2. **Init Script**: Manages the Python socket server as a SysVinit service.
-3. **Log File**: Captures essential output and errors from the Python script.
-4. **Log Rotation Configuration**: Manages log file size and rotation to prevent excessive storage use.
+- `/etc/init.d/socket_server` SysVinit script that manages the `socket_server.py` process, allowing one to start, stop, restart and check the status 
+- `/home/petalinux/socket_server.py` Socket server that recieves configurations from the daq, runs `setup.py`, and streams its real-time log output back to the daq
+- `/home/petalinux/setup.py` Performs a baseline scan, the initial CASB configuration, and constant baseline monitoring until killed
 
-## Step 1: Create Python Socket Server Script
-- **File**: `/home/petalinux/socket_server.py`
+- `/etc/init.d/socket_update` SysVinit script that manages the `socket_update.py` process, allowing one to start, stop, restart and check the status 
+- `/home/petalinux/socket_update.py` Socket server that recieves commands form the daq, runs `update.py`, and streams its real-time log output back to the daq
+- `/home/petalinux/update.py` Updates one aspect of the CASB configuration 
 
----
 
-## Step 2: Create Init Script for SysVinit
-- **File**: `/etc/init.d/socket_server`
-- **Make the Init Script Executable**:
+# How to setup a SysVinit scipt
+
+- Create python socket server script `socket_server.py` and place in `/home/petalinux/`
+- Create init script `socket_server` for SysVinit and place at `/etc/init.d/socket_server`
+- Make the init script exacutatble
 ```bash
 sudo chmod +x /etc/init.d/socket_server
 ```
-- **Enable the Script to Run on Boot**:
+- Enable the init script to run on boot
 ```bash
 sudo update-rc.d socket_server defaults
 ```
-
----
-
-## Step 3: Configure Log Rotation
-- **File**: `/etc/logrotate.d/socket_server`
-
----
-
-## Step 4: Start and Manage the Service
-- **Start**:
+- Can also start and manage the service manually
 ```bash
 sudo /etc/init.d/socket_server start
-```
-- **Stop**:
-```bash
 sudo /etc/init.d/socket_server stop
-```
-- **Check Status**:
-```bash
-sudo /etc/init.d/socket_server status
-```
-- **Restart**:
-```bash
 sudo /etc/init.d/socket_server restart
+sudo /etc/init.d/socket_server status
 ```
