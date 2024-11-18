@@ -7,7 +7,7 @@
 - Do not use the attenuated (`0.3`) gian path's `attenuated time over threshold` comparator
 - **Leave analog input 2 off at all times** 
 
-# How to connect and configure the CASB 
+# How to connect to and configure the CASB 
 Clone this repository
 ```bash
 git clone git@github.com:hbjamin/casb-control.git
