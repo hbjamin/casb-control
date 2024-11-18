@@ -2,11 +2,27 @@
 - `daq/` Use the contents of this folder to configure the CASB remotely 
 - `zturn/` Code on the CASB's Z-Turn **(DO NOT EDIT EXCEPT FOR PRINT STATEMENTS)**
 
-# Notes
+### Notes
 - Only use the unity (actually `0.65`) gain path. This includes the `high`, `medium`, `low`, and `time over threshold` compators.
 - Analog input 2 is noisy. **LEAVE OFF AT ALL TIMES**
 
-# Map of outputs
+### Map of outputs
+From top=1 to bottom=15. Only the bolded ones are currently used 
+- `1` Unity path analog monitor before baseline restoration
+- `2` Unity path analog monitor after baseline restoration 
+- `3` Attenuated path analog monitor before baseline restoration 
+- `4` Attenuated path analog monitor after baseline restoration 
+- `5` Unity path high comparator ECL output 
+- `6` Unity path medium comparator ECL output 
+- `7` Unity path low comparator ECL output 
+- `8` Unity path time over threshold comparator ECL output 
+- `9` Attenuated path time over threshold comparator ECL output 
+- `10` Spare ECL output 1 
+- `11` Spare ECL output 2 
+- `12` Lockout ECL input
+- `13` Delayed global trigger ECL input
+- `14` Spare ECL input 1
+- `15` Spare ECL input 2
 
 # How to connect and configure the CASB 
 Clone this repository
