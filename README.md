@@ -7,14 +7,15 @@
 - Analog input 2 is noisy. **LEAVE OFF AT ALL TIMES**
 
 ### Map of outputs 
-| `1` | **Unity path analog monitor before baseline restoration** |
+|---------------------------|-------------------------------------------------------------------------------------------------------|
+| `1` | Unity path analog monitor before baseline restoration |
 | `2` | **Unity path analog monitor after baseline restoration**  |
 | `3` | Attenuated path analog monitor before baseline restoration |
 | `4` | Attenuated path analog monitor after baseline restoration |
 | `5` | **Unity path high comparator ECL output** |
 | `6` | **Unity path medium comparator ECL output** |
 | `7` | **Unity path low comparator ECL output** |
-| `8` | **Unity path time over threshold comparator ECL output |
+| `8` | **Unity path time over threshold comparator ECL output** |
 | `9` | Attenuated path time over threshold comparator ECL output |
 | `10`|  Spare ECL output 1 |
 | `11`|  Spare ECL output 2 |
