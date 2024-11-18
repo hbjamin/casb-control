@@ -7,6 +7,7 @@
 - Analog input 2 is noisy. **LEAVE OFF AT ALL TIMES**
 
 ### Map of outputs 
+| SMB Number | Description |
 |---------------------------|-------------------------------------------------------------------------------------------------------|
 | `1` | Unity path analog monitor before baseline restoration |
 | `2` | **Unity path analog monitor after baseline restoration**  |
