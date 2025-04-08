@@ -1,10 +1,13 @@
-# Central Analog Summing Board (CASB)
+# Software for the Central Analog Summing Board (CASB)
+Written in Python3. Listens for a configuration file from the Data Aquisition System (DAQ), parses it, and sets thresholds and masks on the board accordingly. Digital to Analog Converter (DAC) output threshold voltages and Analog to Digical Converter (ADC) input voltages are communicated using I2C. Masks are switched on and off using GPIO. Writes firmware level configurables like reshape length to memory registers (add this).
+
+### Directories
 - `daq/` Use the contents of this folder to configure the CASB remotely 
 - `zturn/` Code on the CASB's Z-Turn 
 
-### Notes
-- Only use the unity (actually `0.65`) gain path's `high`, `medium`, `low`, and `time over threshold` compators.
-- Do not use the attenuated (`0.3`) gian path's `attenuated time over threshold` comparator
+### Notes from CASB 1 and 2 deployment
+- Only use the unity gain path's `high`, `medium`, `low`, and `time over threshold` compators.
+- Do not use the attenuated gian path's `attenuated time over threshold` comparator
 - **Leave analog input 2 off at all times** 
 
 # How to connect to and configure the CASB 
